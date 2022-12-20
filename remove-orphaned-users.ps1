@@ -2,7 +2,7 @@
 #then identify orphaned users by their SID strings
 #and remove permissions from all users with SID strings
 
-Connect-ExchangeOnline -UserPrincipalName [<credentials>]
+Connect-ExchangeOnline -UserPrincipalName [<credentials.]
 
 $readperm = (get-mailboxpermission -identity [<MB>]).user
 $readarray = (0..(($readperm.count)-1))
@@ -15,7 +15,7 @@ foreach ($number in $readarray)
         
 }
 
-$sendperm = (get-recipientpermission -identity [<MB>]).user
+$sendperm = (get-recipientpermission -identity [<MB>]).trustee
 $sendarray = (0..(($sendperm.count)-1))
 foreach ($number in $sendarray)
 {
