@@ -2,26 +2,55 @@
 #then identify orphaned users by their SID strings
 #and remove permissions from all users with SID strings
 
-Connect-ExchangeOnline -UserPrincipalName [<credentials.]
 
-$readperm = (get-mailboxpermission -identity [<MB>]).user
-$readarray = (0..(($readperm.count)-1))
-foreach ($number in $readarray)
+#replace [<365admin>] with admin UPN
+#replace [<MB>] with mailbox name (keep quotes)
+
+#below is the test version, just showing that it is only pulling out SIDs
+
+$SharedMB = "credit.control@card-saver.co.uk"
+
+Connect-ExchangeOnline -UserPrincipalName pwilcock@fyldecoast.onmicrosoft.com
+
+Get-MailboxPermission $SharedMB | ForEach `
 {
-    if ($readperm[$number] -like "*S-1-5-21-*")
-        {
-            remove-mailboxpermission -identity [<MB>] -user $readperm[$number] -accessrights fullaccess
-        }
+    if ($_.User -Like "*S-1-5-21-*")
+    {
+        [System.Windows.MessageBox]::show($_.User)
+    }
         
 }
 
-$sendperm = (get-recipientpermission -identity [<MB>]).trustee
-$sendarray = (0..(($sendperm.count)-1))
-foreach ($number in $sendarray)
+Get-RecipientPermission $SharedMB | ForEach `
 {
-    if ($sendperm[$number] -like "*S-1-5-21-*")
-        {
-            remove-recipientpermission [<MB>] -AccessRights SendAs -Trustee $sendperm[$number]
-        }
+    if ($_.Trustee -Like "*S-1-5-21-*")
+    {
+        [System.Windows.MessageBox]::show($_.Trustee)
+    }
+        
+}
+
+
+#below is the finished version, designed to remove permissions from the SIDs it pulls
+
+$SharedMB = "[<MB>]"
+
+Connect-ExchangeOnline -UserPrincipalName [<365admin>]
+
+Get-MailboxPermission $SharedMB | ForEach `
+{
+    if ($_.User -Like "*S-1-5-21-*")
+    {
+        Remove-MailboxPermission -Identity $SharedMB -User $_.Name
+    }
+        
+}
+
+Get-RecipientPermission $SharedMB | ForEach `
+{
+    if ($_.Trustee -Like "*S-1-5-21-*")
+    {
+        Remove-RecipientPermission -Identity $SharedMB -Trustee $_.Trustee
+    }
         
 }
